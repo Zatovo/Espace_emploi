@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OffreController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,10 +21,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/offres', [OffreController::class, 'store']); // Créer une offre
+    Route::get('/offres', [OffreController::class, 'index']); // Voir toutes les offres
+    Route::get('/offres/recruteur', [OffreController::class, 'offresRecruteur']); // Offres du recruteur connecté
+    Route::put('/offres/{id}', [OffreController::class, 'update']); // Modifier une offre
+    Route::delete('/offres/{id}', [OffreController::class, 'destroy']); // Supprimer une offre
 });
+

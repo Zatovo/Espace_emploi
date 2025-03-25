@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -51,17 +52,16 @@ class AuthController extends Controller
         $user = User::where('email', $validated['email'])->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Les informations de connexion sont incorrectes.'],
-            ]);
+            return response()->json(['message' => 'Email ou mot de passe incorrect'], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::login($user); // Authentifier l'utilisateur dans la session
 
         return response()->json([
             'message' => 'Connexion réussie',
             'user' => $user,
-            'token' => $token
+            'token' => $user->createToken('auth_token')->plainTextToken,
+            'role' => $user->role
         ]);
     }
 
@@ -70,11 +70,16 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        if ($request->user()) {
+            $request->user()->tokens()->delete();
+            Auth::logout(); // Détruire la session Laravel aussi
 
-        return response()->json([
-            'message' => 'Déconnexion réussie'
-        ]);
+            return response()->json([
+                'message' => 'Déconnexion réussie'
+            ]);
+        }
+
+        return response()->json(['message' => 'Aucun utilisateur authentifié'], 400);
     }
 
     /**
