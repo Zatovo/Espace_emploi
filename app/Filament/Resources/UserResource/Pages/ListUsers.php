@@ -12,6 +12,13 @@ class ListUsers extends ListRecords
 {
     protected static string $resource = UserResource::class;
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\CreateAction::make(),
+        ];
+    }
+
     // Définir les colonnes à afficher dans la liste
     protected function getTableColumns(): array
     {
