@@ -13,7 +13,15 @@ class Offre extends Model
 {
     use HasFactory;
 
-    public function user(): BelongsTo
+    protected $fillable = [
+        'id_recru',
+        'date_limit',
+        'description',
+        'entreprise',
+        'contrat',
+    ];
+
+    public function recruteur(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id_recru');
     }

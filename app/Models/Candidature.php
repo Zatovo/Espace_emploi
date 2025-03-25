@@ -13,7 +13,17 @@ class Candidature extends Model
 {
     use HasFactory;
 
-    public function user(): BelongsTo
+    protected $fillable = [
+        'id_cand',
+        'cv',
+        'lm',
+        'adresse',
+        'niveau',
+        'exp',
+        'date_naiss',
+    ];
+
+    public function candidat(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id_cand');
     }

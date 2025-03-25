@@ -14,13 +14,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // $user=[
+        //     'role' => 'Admin',
+        //     'name'=>'Administrateur',
+        //     'lastname'=>'G5',
+        //     'tel'=>'0343037149',
+        //     'email' => 'test@example.com',
+        //     'password' => Hash::make('test@example.com')
+        // ];
+        // DB::table('users')->insert($user);
+
         $user=[
-            'role' => 'Admin',
-            'name'=>'Administrateur',
-            'lastname'=>'G5',
-            'tel'=>'0343037149',
-            'email' => 'test@example.com',
-            'password' => Hash::make('test@example.com')
+            'role' => 'candidat',
+            'name'=>'RAKOTONIRINA',
+            'lastname'=>'Zatovo',
+            'tel'=>'0348021824',
+            'email' => 'rakotonirinazatovo@gmail.com',
+            'password' => Hash::make('rakotonirinazatovo@gmail.com')
         ];
         DB::table('users')->insert($user);
     }
