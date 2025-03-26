@@ -31,11 +31,11 @@
                 @csrf
                 <div class="mb-4">
                     <label class="block text-gray-700">Nom</label>
-                    <input type="text" name="nom" value="{{ old('nom') }}" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Votre nom" required>
+                    <input type="text" name="name" value="{{ old('name') }}" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Votre nom" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700">Prénom</label>
-                    <input type="text" name="prenom" value="{{ old('prenom') }}" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Votre prénom" required>
+                    <input type="text" name="lastname" value="{{ old('lastname') }}" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Votre prénom" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700">Email</label>

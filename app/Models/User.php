@@ -43,4 +43,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Offre::class);
     }
+    public function hasRole($role)
+{
+    return $this->role === $role; 
+}
+
 }

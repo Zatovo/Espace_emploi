@@ -1,99 +1,91 @@
-<?php
-session_start();
-require_once '../config/database.php'; // Assurez-vous que la connexion à la base de données est bien incluse
-
-// Vérification si l'utilisateur est connecté et est un recruteur
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'recruteur') {
-    header('Location: dashboardRecru');
-    exit();
-}
-
-// Connexion à la base de données
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-if ($conn->connect_error) {
-    die("Erreur de connexion : " . $conn->connect_error);
-}
-
-// Ajout d'une offre
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['ajouter_offre'])) {
-    $description = $conn->real_escape_string($_POST['description']);
-    $entreprise = $conn->real_escape_string($_POST['entreprise']);
-    $contrat = $conn->real_escape_string($_POST['contrat']);
-    $date_limit = $_POST['date_limit'];
-    $id_recru = $_SESSION['user_id']; // ID du recruteur connecté
-
-    $sql = "INSERT INTO offres (id_recru, date_limit, description, entreprise, contrat) VALUES ('$id_recru', '$date_limit', '$description', '$entreprise', '$contrat')";
-    if ($conn->query($sql) === TRUE) {
-        echo "<p style='color: green;'>Offre ajoutée avec succès !</p>";
-    } else {
-        echo "<p style='color: red;'>Erreur : " . $conn->error . "</p>";
-    }
-}
-
-// Suppression d'une offre
-if (isset($_GET['supprimer'])) {
-    $id_offre = intval($_GET['supprimer']);
-    $sql = "DELETE FROM offres WHERE id = '$id_offre' AND id_recru = '" . $_SESSION['user_id'] . "'";
-    if ($conn->query($sql) === TRUE) {
-        echo "<p style='color: green;'>Offre supprimée avec succès !</p>";
-    } else {
-        echo "<p style='color: red;'>Erreur lors de la suppression.</p>";
-    }
-}
-
-// Récupération des offres du recruteur
-$sql = "SELECT * FROM offres WHERE id_recru = '" . $_SESSION['user_id'] . "'";
-$result = $conn->query($sql);
-
-$conn->close();
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Recruteur</title>
+    <title>Ajouter ou Modifier une Offre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="h-screen bg-gray-100">
 
-    <h1>Bienvenue sur votre espace recruteur</h1>
+    <!-- Navbar -->
+<!-- Navbar -->
+<nav class="bg-blue-600 text-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <a href="{{ route('offres.index') }}" class="text-xl font-bold">Bienvenue recruteur</a>
+        <div class="flex items-center">
+            <!-- Vérifier si l'utilisateur est connecté avant d'afficher son nom -->
+            @auth
+                <span class="mr-4">{{ auth()->user()->name }}</span>
+            @endauth
 
-    <h2>Publier une nouvelle offre</h2>
-    <form method="POST">
-        <label>Entreprise :</label>
-        <input type="text" name="entreprise" required>
-        <label>Type de contrat :</label>
-        <input type="text" name="contrat" required>
-        <label>Date limite :</label>
-        <input type="date" name="date_limit" required>
-        <label>Description :</label>
-        <textarea name="description" required></textarea>
-        <button type="submit" name="ajouter_offre">Ajouter l'offre</button>
-    </form>
+            <!-- Bouton de déconnexion -->
+            @auth
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="text-white bg-red-600 px-4 py-2 rounded hover:bg-red-700">
+                        Se déconnecter
+                    </button>
+                </form>
+            @endauth
 
-    <h2>Vos offres publiées</h2>
-    <table border="1">
-        <tr>
-            <th>Entreprise</th>
-            <th>Contrat</th>
-            <th>Date limite</th>
-            <th>Description</th>
-            <th>Actions</th>
-        </tr>
-        <?php while ($offre = $result->fetch_assoc()) : ?>
-            <tr>
-                <td><?= htmlspecialchars($offre['entreprise']) ?></td>
-                <td><?= htmlspecialchars($offre['contrat']) ?></td>
-                <td><?= htmlspecialchars($offre['date_limit']) ?></td>
-                <td><?= htmlspecialchars($offre['description']) ?></td>
-                <td>
-                    <a href="modifier_offre.php?id=<?= $offre['id'] ?>">Modifier</a>
-                    <a href="?supprimer=<?= $offre['id'] ?>" onclick="return confirm('Êtes-vous sûr ?')">Supprimer</a>
-                </td>
-            </tr>
-        <?php endwhile; ?>
-    </table>
+            <!-- Si non authentifié, afficher "Invité" et proposer de se connecter -->
+            @guest
+                <a href="{{ route('login') }}" class="text-white px-4 py-2 rounded hover:bg-gray-700">Se déconnecter</a>
+            @endguest
+        </div>
+    </div>
+</nav>
+
+
+    <!-- Message de succès -->
+    @if(session('success'))
+        <div class="p-4 mb-6 bg-green-500 text-white text-center rounded-lg">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- Formulaire d'ajout ou de modification de l'offre -->
+    <div class="w-4/5 max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden flex flex-col p-10 mt-6">
+        <h2 class="text-2xl font-semibold text-center mb-6">Ajouter ou Modifier une Offre</h2>
+
+        <!-- Formulaire -->
+        <form action="{{ route('store') }}" method="POST">
+                @csrf
+
+            <!-- Nom de l'entreprise -->
+            <div class="mb-4">
+                <label for="entreprise" class="block text-gray-700">Nom de l'entreprise</label>
+                <input type="text" id="entreprise" name="entreprise" value="{{ old('entreprise', $offre->entreprise ?? '') }}" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Nom de l'entreprise" required>
+            </div>
+
+            <!-- Type de contrat -->
+            <div class="mb-4">
+                <label for="contrat" class="block text-gray-700">Type de contrat</label>
+                <input type="text" id="contrat" name="contrat" value="{{ old('contrat', $offre->contrat ?? '') }}" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Type de contrat" required>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700">Description</label>
+                <textarea id="description" name="description" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Description de l'offre" required>{{ old('description', $offre->description ?? '') }}</textarea>
+            </div>
+
+            <!-- Date limite -->
+            <div class="mb-4">
+                <label for="date_limit" class="block text-gray-700">Date limite</label>
+                <input type="date" id="date_limit" name="date_limit" value="{{ old('date_limit', $offre->date_limit ?? '') }}" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" required>
+            </div>
+
+            <!-- Bouton de soumission -->
+            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">Ajouter l'offre</button>
+        </form>
+
+        <!-- Lien retour vers la liste des offres -->
+        <p class="text-gray-600 text-center mt-4">
+            <a href="{{ route('offres.index') }}" class="text-blue-600 font-semibold">Retour à la liste des offres</a>
+        </p>
+    </div>
 
 </body>
 </html>

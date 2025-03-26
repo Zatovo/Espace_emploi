@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Auth;
 
 class OffreController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth'); // Vérifie que l'utilisateur est connecté
+        $this->middleware('recruteur')->only(['store', 'offresRecruteur', 'update', 'destroy']);
+    }
+
     /**
      * Afficher toutes les offres
      */
@@ -22,12 +28,6 @@ class OffreController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
-
-        if ($user->role !== 'recruteur') {
-            return response()->json(['message' => 'Accès refusé. Seuls les recruteurs peuvent créer des offres.'], 403);
-        }
-
         $request->validate([
             'date_limit' => 'required|date|after:today',
             'description' => 'required|string',
@@ -36,42 +36,31 @@ class OffreController extends Controller
         ]);
 
         $offre = Offre::create([
-            'id_recru' => $user->id,
+            'id_recru' => Auth::id(),
             'date_limit' => $request->date_limit,
             'description' => $request->description,
             'entreprise' => $request->entreprise,
             'contrat' => $request->contrat,
         ]);
 
-        return response()->json(['message' => 'Offre créée avec succès', 'offre' => $offre], 201);
+        return redirect()->route('dashboard.recru')->with('success', 'Offre créée avec succès');
     }
 
     /**
-     * Récupérer les offres d’un recruteur spécifique
+     * Afficher les offres du recruteur connecté
      */
     public function offresRecruteur()
     {
-        $user = Auth::user();
-
-        if ($user->role !== 'recruteur') {
-            return response()->json(['message' => 'Accès refusé'], 403);
-        }
-
-        $offres = Offre::where('id_recru', $user->id)->get();
-        return response()->json($offres);
+        $offres = Offre::where('id_recru', Auth::id())->get();
+        return view('dashboardRecru', compact('offres'));
     }
 
     /**
-     * Modifier une offre (réservé au recruteur qui l’a créée)
+     * Modifier une offre
      */
     public function update(Request $request, $id)
     {
-        $user = Auth::user();
-        $offre = Offre::find($id);
-
-        if (!$offre || $offre->id_recru !== $user->id) {
-            return response()->json(['message' => 'Offre introuvable ou accès refusé'], 403);
-        }
+        $offre = Offre::where('id_recru', Auth::id())->findOrFail($id);
 
         $request->validate([
             'date_limit' => 'sometimes|date|after:today',
@@ -81,22 +70,34 @@ class OffreController extends Controller
         ]);
 
         $offre->update($request->all());
-        return response()->json(['message' => 'Offre mise à jour avec succès', 'offre' => $offre]);
+
+        return redirect()->route('dashboard.recru')->with('success', 'Offre mise à jour avec succès');
     }
 
     /**
-     * Supprimer une offre (réservé au recruteur qui l’a créée)
+     * Supprimer une offre
      */
     public function destroy($id)
     {
-        $user = Auth::user();
-        $offre = Offre::find($id);
-
-        if (!$offre || $offre->id_recru !== $user->id) {
-            return response()->json(['message' => 'Offre introuvable ou accès refusé'], 403);
-        }
-
+        $offre = Offre::where('id_recru', Auth::id())->findOrFail($id);
         $offre->delete();
-        return response()->json(['message' => 'Offre supprimée avec succès']);
+
+        return redirect()->route('dashboard.recru')->with('success', 'Offre supprimée avec succès');
     }
+    public function dashboardRecruteur()
+{
+    // Vérifie si l'utilisateur est authentifié
+    if (Auth::check()) {
+        // Récupérer les offres du recruteur connecté
+        $offres = Offre::where('recruteur_id', Auth::id())->get(); // Assure-toi de lier avec le bon champ
+
+        return view('dashboardRecru', compact('offres')); // Passer les offres à la vue
+    }
+
+    // Rediriger si l'utilisateur n'est pas connecté
+    return redirect()->route('login');
+}
+
+
+
 }

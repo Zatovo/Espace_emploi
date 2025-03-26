@@ -13,9 +13,22 @@ class Offre extends Model
 {
     use HasFactory;
 
-        'description',
+    // Déclaration des attributs de la table "offres" que tu souhaites remplir
+    protected $fillable = [
+        'description', 
+        'date_limit', 
+        'entreprise', 
+        'contrat', 
+        'id_recru'
+    ];
+
+    /**
+     * Définir la relation entre une offre et un utilisateur (recruteur).
+     *
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id_recru');
     }
 }
-

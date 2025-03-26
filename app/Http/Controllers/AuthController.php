@@ -2,91 +2,113 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    /**
-     * Inscription d'un utilisateur
-     */
+    // Enregistrement d'un utilisateur
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'role' => 'required|in:recruteur,candidat',
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'tel' => 'required|string|max:15',
-            'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|min:8',
+            'role' => 'required|string|in:recruteur,candidat,admin', // Ajoute les rôles acceptés
+            'name' => 'required|string',
+            'lastname' => 'required|string',
+            'tel' => 'required|string',
+            'email' => 'required|string|email|unique:users',
+            'password' => 'required|string|min:6',
         ]);
 
         $user = User::create([
             'role' => $validated['role'],
-            'nom' => $validated['nom'],
-            'prenom' => $validated['prenom'],
+            'name' => $validated['name'],
+            'lastname' => $validated['lastname'],
             'tel' => $validated['tel'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
 
+        $token = $user->createToken('authToken')->plainTextToken;
+
         return response()->json([
-            'message' => 'Inscription réussie',
-            'user' => $user
+            'message' => 'Utilisateur enregistré avec succès',
+            'user' => $user,
+            'token' => $token,
+            'redirect_to' => $this->redirectPath($user) // Redirection en fonction du rôle
         ], 201);
     }
 
-    /**
-     * Connexion d'un utilisateur
-     */
+    // Connexion de l'utilisateur
     public function login(Request $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+        $credentials = $request->validate([
+            'email' => 'required|string|email',
+            'password' => 'required|string',
         ]);
-
-        $user = User::where('email', $validated['email'])->first();
-
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return response()->json(['message' => 'Email ou mot de passe incorrect'], 401);
+    
+        if (!Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Identifiants incorrects'], 401);
         }
-
-        Auth::login($user); // Authentifier l'utilisateur dans la session
-
+    
+        // 🔴 Forcer la récupération de l'utilisateur depuis la DB
+        $user = User::where('email', $request->email)->first(); 
+    
+        if (!$user->role) {
+            return response()->json([
+                'message' => 'Rôle inconnu, contactez un administrateur',
+                'user' => $user
+            ], 403);
+        }
+    
+        $token = $user->createToken('authToken')->plainTextToken;
+    
         return response()->json([
             'message' => 'Connexion réussie',
             'user' => $user,
-            'token' => $user->createToken('auth_token')->plainTextToken,
-            'role' => $user->role
+            'role' => $user->role, // Vérifie si le rôle est bien retourné
+            'token' => $token,
+        ]);
+    }
+    // Récupération des informations de l'utilisateur authentifié
+    public function profile(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user(),
         ]);
     }
 
-    /**
-     * Déconnexion d'un utilisateur
-     */
+    // Déconnexion
     public function logout(Request $request)
     {
-        if ($request->user()) {
-            $request->user()->tokens()->delete();
-            Auth::logout(); // Détruire la session Laravel aussi
+        $request->user()->tokens()->delete();
 
-            return response()->json([
-                'message' => 'Déconnexion réussie'
-            ]);
-        }
-
-        return response()->json(['message' => 'Aucun utilisateur authentifié'], 400);
+        return response()->json(['message' => 'Déconnexion réussie']);
     }
 
-    /**
-     * Récupérer l'utilisateur authentifié
-     */
-    public function me(Request $request)
+    // Fonction pour définir la redirection après connexion
+    private function redirectPath($user)
     {
-        return response()->json($request->user());
+        if ($user->role === 'recruteur') {
+            return '/dashboard/recruteur';
+        } elseif ($user->role === 'candidat') {
+            return '/dashboard/candidat';
+        } elseif ($user->role === 'admin') {
+            return '/admin/dashboard';
+        }
+        return '/home';
     }
+
+protected function redirectTo()
+{
+    if (Auth::check()) {
+        if (Auth::user()->role === 'candidat') {
+            return '/dashboardCan';
+        }
+    }
+    return '/home';
+}
+
+
 }
