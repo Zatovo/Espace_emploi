@@ -47,23 +47,23 @@ class AuthController extends Controller
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
-    
+
         if (!Auth::attempt($credentials)) {
             return response()->json(['message' => 'Identifiants incorrects'], 401);
         }
-    
+
         // 🔴 Forcer la récupération de l'utilisateur depuis la DB
-        $user = User::where('email', $request->email)->first(); 
-    
+        $user = User::where('email', $request->email)->first();
+
         if (!$user->role) {
             return response()->json([
                 'message' => 'Rôle inconnu, contactez un administrateur',
                 'user' => $user
             ], 403);
         }
-    
+
         $token = $user->createToken('authToken')->plainTextToken;
-    
+
         return response()->json([
             'message' => 'Connexion réussie',
             'user' => $user,
@@ -94,8 +94,6 @@ class AuthController extends Controller
             return '/dashboard/recruteur';
         } elseif ($user->role === 'candidat') {
             return '/dashboard/candidat';
-        } elseif ($user->role === 'admin') {
-            return '/admin/dashboard';
         }
         return '/home';
     }
