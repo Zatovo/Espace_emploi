@@ -34,7 +34,14 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/offres', [OffreController::class, 'index']);
 
 // Créer une nouvelle offre (réservé aux recruteurs)
+<<<<<<< Updated upstream
 Route::post('/offres', [OffreController::class, 'store'])->middleware('auth:sanctum');
+=======
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/offres', [OffreController::class, 'store']); // Endpoint API pour créer une offre
+});
+>>>>>>> Stashed changes
 
 // Récupérer les offres d’un recruteur spécifique
 Route::get('/offres/recruteur', [OffreController::class, 'offresRecruteur'])->middleware('auth:sanctum');
