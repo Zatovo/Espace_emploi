@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $user=[
-           'role' => 'Admin',
+            'role' => 'Admin',
             'name'=>'Administrateur',
             'lastname'=>'G5',
             'tel'=>'0343037149',
