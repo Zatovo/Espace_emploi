@@ -10,13 +10,15 @@ class CreateOffresTable extends Migration
     {
         Schema::create('offres', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_recru')->constrained('users')->onDelete('cascade');
-            $table->date('date_limit');
-            $table->text('description');
+            $table->unsignedBigInteger('id_recru');
             $table->string('entreprise', 50);
             $table->string('contrat', 10);
+            $table->text('description');
+            $table->date('date_limit');
             $table->timestamps();
+            $table->foreign('id_recru')->references('id')->on('users')->onDelete('cascade');
         });
+       
     }
 
     public function down()

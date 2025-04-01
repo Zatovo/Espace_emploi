@@ -69,8 +69,10 @@ class AuthController extends Controller
             'user' => $user,
             'role' => $user->role, // Vérifie si le rôle est bien retourné
             'token' => $token,
+            'redirect_to' => $this->redirectPath($user)
         ]);
     }
+
     // Récupération des informations de l'utilisateur authentifié
     public function profile(Request $request)
     {
@@ -100,15 +102,13 @@ class AuthController extends Controller
         return '/home';
     }
 
-protected function redirectTo()
-{
-    if (Auth::check()) {
-        if (Auth::user()->role === 'candidat') {
-            return '/dashboardCan';
+    protected function redirectTo()
+    {
+        if (Auth::check()) {
+            if (Auth::user()->role === 'candidat') {
+                return '/dashboardCan';
+            }
         }
+        return '/home';
     }
-    return '/home';
-}
-
-
 }

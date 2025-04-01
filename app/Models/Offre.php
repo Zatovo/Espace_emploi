@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 /**
  * @mixin IdeHelperOffre
@@ -31,4 +33,8 @@ class Offre extends Model
     {
         return $this->belongsTo(User::class, 'id_recru');
     }
+    public function candidatures(): HasMany
+{
+    return $this->hasMany(Candidature::class, 'id_offre');
+}
 }

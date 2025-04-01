@@ -29,6 +29,7 @@
                 </div>
                 <button id="loginButton" type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">Se connecter</button>
             </form>
+            <button id="adminLoginButton" class="w-full mt-4 bg-gray-600 text-white p-3 rounded-lg hover:bg-gray-700">Se connecter en tant qu'administrateur</button>
             <p class="text-gray-600 text-center mt-4">
                 Pas encore inscrit ? <a href='signup' class="text-blue-600 font-semibold">Créer un compte</a>
             </p>
@@ -87,6 +88,10 @@
 
         loginButton.disabled = false;
         loginButton.textContent = "Se connecter";
+    });
+
+    document.getElementById("adminLoginButton").addEventListener("click", function() {
+        window.location.href = "http://127.0.0.1:8000/admin/login";
     });
     </script>
 </body>

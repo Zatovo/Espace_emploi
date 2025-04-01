@@ -2,71 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Candidature;
+use App\Models\Offre;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class CandidatureController extends Controller
 {
-    // Vérifie que seul un candidat peut accéder à ces routes
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (!Auth::check() || !Auth::user()->hasRole('candidat')) {
-                abort(403, 'Accès non autorisé');
-            }
-            return $next($request);
-        });
-    }
-
-    // Afficher la page du dashboard avec les candidatures
+    // Affiche les offres et l'historique des candidatures du candidat connecté
     public function index()
     {
+        $offres = Offre::all();
         $candidatures = Candidature::where('id_cand', Auth::id())->get();
-        return view('dashboardCan', compact('candidatures'));
+
+        return view('dashboardCan', compact('offres', 'candidatures'));
     }
 
-    // Enregistrer une candidature
+    // Stocke une nouvelle candidature
     public function store(Request $request)
     {
         $request->validate([
+            'offre_id' => 'required|exists:offres,id',
             'cv' => 'required|file|mimes:pdf,doc,docx|max:2048',
-            'lm' => 'required|string',
+            'lm' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             'adresse' => 'required|string',
             'niveau' => 'required|string',
-            'exp' => 'nullable|string',
+            'exp' => 'required|string',
             'date_naiss' => 'required|date',
         ]);
 
-        // Upload du CV
-        $cvPath = $request->file('cv')->store('cvs', 'public');
+        $cvPath = $request->file('cv')->store('cvs');
+        $lmPath = $request->file('lm') ? $request->file('lm')->store('lettres') : null;
 
         Candidature::create([
             'id_cand' => Auth::id(),
             'cv' => $cvPath,
-            'lm' => $request->lm,
+            'lm' => $lmPath,
             'adresse' => $request->adresse,
             'niveau' => $request->niveau,
             'exp' => $request->exp,
             'date_naiss' => $request->date_naiss,
         ]);
 
-        return redirect()->route('dashboardCan')->with('success', 'Candidature envoyée avec succès.');
-    }
-
-    // Supprimer une candidature
-    public function destroy($id)
-    {
-        $candidature = Candidature::where('id_cand', Auth::id())->findOrFail($id);
-
-        // Supprimer le fichier CV
-        if ($candidature->cv) {
-            Storage::disk('public')->delete($candidature->cv);
-        }
-
-        $candidature->delete();
-
-        return redirect()->route('dashboardCan')->with('success', 'Candidature supprimée.');
+        return redirect()->route('dashboard.candidat')->with('success', 'Candidature envoyée avec succès !');
     }
 }

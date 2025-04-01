@@ -10,10 +10,10 @@ class RecruteurMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'recruteur') {
+        if (Auth::check()) { // Vérifie juste si l'utilisateur est connecté
             return $next($request);
         }
         
-        return redirect('/home')->with('error', 'Accès refusé.');
+        return redirect('/home')->with('error', 'Vous devez être connecté pour accéder à cette page.');
     }
 }

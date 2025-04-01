@@ -15,6 +15,7 @@ class Candidature extends Model
 
     protected $fillable = [
         'id_cand',
+        'id_offre',
         'cv',
         'lm',
         'adresse',
@@ -26,5 +27,10 @@ class Candidature extends Model
     public function candidat(): BelongsTo
     {
         return $this->belongsTo(User::class, 'id_cand');
+    }
+
+    public function offre(): BelongsTo
+    {
+        return $this->belongsTo(Offre::class, 'id_offre');
     }
 }

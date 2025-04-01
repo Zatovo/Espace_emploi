@@ -8,96 +8,64 @@ use Illuminate\Support\Facades\Auth;
 
 class OffreController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth'); // Vérifie que l'utilisateur est connecté
-        $this->middleware('recruteur')->only(['store', 'offresRecruteur', 'update', 'destroy']);
-    }
-
-    /**
-     * Afficher toutes les offres
-     */
+    // Afficher la liste des offres créées par le recruteur
     public function index()
     {
-        $offres = Offre::with('user')->get();
-        return response()->json($offres);
+          // Récupérer les offres créées par le recruteur connecté
+    $offres = Offre::where('id_recru', Auth::id())->with('candidatures')->get();
+
+    // Envoyer les données à la vue
+    return view('dashboardRecru', compact('offres'));
+    }
+    public function create()
+{
+    if (!Auth::check()) {
+        return redirect()->route('login')->with('error', 'Vous devez être connecté pour créer une offre.');
     }
 
-    /**
-     * Créer une nouvelle offre (réservé aux recruteurs)
-     */
+    return view('offres.create');
+}
+
+    // Créer une nouvelle offre
     public function store(Request $request)
     {
         $request->validate([
-            'date_limit' => 'required|date|after:today',
             'description' => 'required|string',
-            'entreprise' => 'required|string|max:50',
-            'contrat' => 'required|string|max:10',
+            'date_limit' => 'required|date',
+            'entreprise' => 'required|string',
+            'contrat' => 'required|string',
         ]);
 
-        $offre = Offre::create([
-            'id_recru' => Auth::id(),
-            'date_limit' => $request->date_limit,
+        Offre::create([
             'description' => $request->description,
+            'date_limit' => $request->date_limit,
             'entreprise' => $request->entreprise,
             'contrat' => $request->contrat,
+            'id_recru' => Auth::id(),
         ]);
 
-        return redirect()->route('dashboard.recru')->with('success', 'Offre créée avec succès');
+        return redirect()->route('dashboard.recruteur')->with('success', 'Offre créée avec succès !');
     }
 
-    /**
-     * Afficher les offres du recruteur connecté
-     */
-    public function offresRecruteur()
-    {
-        $offres = Offre::where('id_recru', Auth::id())->get();
-        return view('dashboardRecru', compact('offres'));
-    }
-
-    /**
-     * Modifier une offre
-     */
-    public function update(Request $request, $id)
-    {
-        $offre = Offre::where('id_recru', Auth::id())->findOrFail($id);
-
-        $request->validate([
-            'date_limit' => 'sometimes|date|after:today',
-            'description' => 'sometimes|string',
-            'entreprise' => 'sometimes|string|max:50',
-            'contrat' => 'sometimes|string|max:10',
-        ]);
-
-        $offre->update($request->all());
-
-        return redirect()->route('dashboard.recru')->with('success', 'Offre mise à jour avec succès');
-    }
-
-    /**
-     * Supprimer une offre
-     */
+    // Supprimer une offre
     public function destroy($id)
     {
         $offre = Offre::where('id_recru', Auth::id())->findOrFail($id);
         $offre->delete();
 
-        return redirect()->route('dashboard.recru')->with('success', 'Offre supprimée avec succès');
+        return redirect()->route('dashboard.recruteur')->with('success', 'Offre supprimée.');
     }
-    public function dashboardRecruteur()
+
+    public function dashboardRecru()
 {
-    // Vérifie si l'utilisateur est authentifié
-    if (Auth::check()) {
-        // Récupérer les offres du recruteur connecté
-        $offres = Offre::where('recruteur_id', Auth::id())->get(); // Assure-toi de lier avec le bon champ
+    $user = Auth::user();
 
-        return view('dashboardRecru', compact('offres')); // Passer les offres à la vue
+    if (!$user || $user->role !== 'Recruteur') {
+        return redirect()->route('login')->with('error', 'Accès non autorisé.');
     }
 
-    // Rediriger si l'utilisateur n'est pas connecté
-    return redirect()->route('login');
+    $offres = Offre::where('id_recru', $user->id)->get(); 
+
+    return view('dashboardRecru', compact('offres'));
 }
-
-
-
 }

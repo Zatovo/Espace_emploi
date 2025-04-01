@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_cand');
             $table->foreign('id_cand')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreignId('id_offre')->constrained('offres')->onDelete('cascade');
             $table->string('cv')->default('N/A');
             $table->text('lm');
             $table->string('adresse',50);

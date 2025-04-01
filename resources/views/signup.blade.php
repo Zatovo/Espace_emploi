@@ -18,6 +18,12 @@
         <!-- Section droite : Formulaire d'inscription -->
         <div class="w-1/2 p-10">
             <h2 class="text-2xl font-semibold text-center mb-6">Créer un compte</h2>
+            @if (isset($success))
+    <div class="mb-4 p-3 bg-green-100 text-green-700 rounded text-center">
+        {{ $success }}
+    </div>
+@endif
+
             @if ($errors->any())
                 <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">
                     <ul>
