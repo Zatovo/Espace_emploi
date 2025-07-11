@@ -15,10 +15,16 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_recru');
             $table->foreign('id_recru')->references('id')->on('users')->cascadeOnDelete();
-            $table->date('date_limit');
-            $table->text('description');
+            $table->string('title_poste',50);
             $table->string('entreprise',50);
+            $table->string('photo',100);
+            $table->text('description');
+            $table->string('localisation',50);
             $table->string('contrat',10);
+            $table->unsignedInteger('exp');
+            $table->unsignedInteger('sale_limit_bas');
+            $table->unsignedInteger('sale_limit_haut');
+            $table->date('date_limit');
             $table->timestamps();
         });
     }

@@ -15,11 +15,17 @@ class Offre extends Model
 
     // Déclaration des attributs de la table "offres" que tu souhaites remplir
     protected $fillable = [
-        'description', 
-        'date_limit', 
-        'entreprise', 
-        'contrat', 
-        'id_recru'
+        'id_recru',
+        'title_poste',
+        'entreprise',
+        'photo',
+        'description',
+        'localisation',
+        'contrat',
+        'exp',
+        'sale_limit_bas',
+        'sale_limit_haut',
+        'date_limit'
     ];
 
     /**

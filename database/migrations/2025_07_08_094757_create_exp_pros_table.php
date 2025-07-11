@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('candidatures', function (Blueprint $table) {
+        Schema::create('exp_pros', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_cand');
-            $table->foreign('id_cand')->references('id')->on('users')->cascadeOnDelete();
-            $table->string('cv')->default('N/A');
+            $table->unsignedBigInteger('id_C');
+            $table->foreign('id_C')->references('id')->on('candidatures')->cascadeOnDelete();
+            $table->date('debut');
+            $table->date('fin');
+            $table->string('poste',50);
             $table->text('description')->nullable();
-            $table->string('adresse',50);
-            $table->string('niveau',20);
-            $table->text('exp');
-            $table->date('date_naiss');
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('candidatures');
+        Schema::dropIfExists('exp_pros');
     }
 };
