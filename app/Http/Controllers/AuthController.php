@@ -13,7 +13,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'role' => 'required|string|in:recruteur,candidat,admin', // Ajoute les rôles acceptés
+            'role' => 'required|string|in:recruteur,candidat', // Ajoute les rôles acceptés
             'name' => 'required|string',
             'lastname' => 'required|string',
             'tel' => 'required|string',
@@ -30,14 +30,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $token = $user->createToken('authToken')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Utilisateur enregistré avec succès',
-            'user' => $user,
-            'token' => $token,
-            'redirect_to' => $this->redirectPath($user) // Redirection en fonction du rôle
-        ], 201);
+        return to_route('login');
     }
 
     // Connexion de l'utilisateur

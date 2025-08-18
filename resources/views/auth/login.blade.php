@@ -18,7 +18,8 @@
         <div class="w-1/2 p-10">
             <h2 class="text-2xl font-semibold text-center mb-6">Connexion</h2>
             <div id="error-message" class="text-red-600 text-center mb-4 hidden"></div>
-            <form id="loginForm">
+            <form action="{{route('login.store')}}" method="post">
+                @csrf
                 <div class="mb-4">
                     <label class="block text-gray-700">Email</label>
                     <input type="email" name="email" class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300" placeholder="Votre email" required>
@@ -35,13 +36,13 @@
         </div>
     </div>
 
-    <script>
+    {{-- <script>
     document.getElementById("loginForm").addEventListener("submit", async function(event) {
         event.preventDefault();
 
         let loginButton = document.getElementById("loginButton");
         let errorMessage = document.getElementById("error-message");
-        
+
         loginButton.disabled = true;
         loginButton.textContent = "Connexion en cours...";
         errorMessage.classList.add("hidden");
@@ -67,7 +68,7 @@
                 localStorage.setItem("user_role", data.role);
 
                 alert("Connexion réussie !");
-                
+
                 if (data.role === "recruteur") {
                     window.location.href = '/dashboardRecru';
                 } else if (data.role === "candidat") {
@@ -88,6 +89,6 @@
         loginButton.disabled = false;
         loginButton.textContent = "Se connecter";
     });
-    </script>
+    </script> --}}
 </body>
 </html>
